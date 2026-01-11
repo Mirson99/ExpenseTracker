@@ -1,0 +1,47 @@
+# Rider
+.idea/
+*.sln.iml
+*.DotSettings.user
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+
+# Test Coverage
+coverage/
+*.coverage
+
+# NuGet
+*.nupkg
+packages/
+!**/packages/build/
+
+# Docker
+docker-compose.override.yml
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+*.env
+.env
+
+# OS
+.DS_Store
+Thumbs.db
