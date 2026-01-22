@@ -32,22 +32,24 @@ public class GetUserExpensesQueryHandler: IRequestHandler<GetUserExpensesQuery, 
 
         if (request.SortOrder?.ToLower() == "asc")
         {
-            expenseQuery = expenseQuery.OrderBy(GetSortProperty(request));
+            expenseQuery = expenseQuery.OrderBy(GetSortProperty(request)).ThenBy(e => e.CreatedAt);
         }
         else
         {
-            expenseQuery = expenseQuery.OrderByDescending(GetSortProperty(request));
+            expenseQuery = expenseQuery.OrderByDescending(GetSortProperty(request)).ThenByDescending(e => e.CreatedAt);
         }
 
         var expensesResponseQuery = expenseQuery
             .Select(p => new ExpenseResponse()
             {
+                Id = p.Id,
                 Name = p.Name,
                 Description = p.Description,
                 Currency = p.Currency,
                 Amount = p.Amount,
                 Date = p.Date,
                 CategoryName = p.Category.Name,
+                CategoryId = p.CategoryId
             });
 
         var expenses = await PagedList<ExpenseResponse>.CreateAsync(
@@ -64,6 +66,7 @@ public class GetUserExpensesQueryHandler: IRequestHandler<GetUserExpensesQuery, 
             "name" => expense => expense.Name,
             "amount" => expense => expense.Amount,
             "currency" => expense => expense.Currency,
+            "date" => expense => expense.Date,
             _ => expense => expense.Date
         };
 

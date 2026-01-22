@@ -2,6 +2,7 @@ using ExpenseTracker.API.Middleware;
 using ExpenseTracker.Application;
 using ExpenseTracker.Infrastructure;
 
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
