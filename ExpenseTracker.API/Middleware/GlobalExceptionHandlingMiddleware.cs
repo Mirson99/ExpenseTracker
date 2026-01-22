@@ -26,12 +26,11 @@ public class GlobalExceptionHandlingMiddleware
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "An unhandled exception occurred");
             await HandleExceptionAsync(context, exception);
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
 
@@ -79,6 +78,18 @@ public class GlobalExceptionHandlingMiddleware
         };
 
         context.Response.StatusCode = (int)statusCode;
+        
+        var requestName = $"{context.Request.Method} {context.Request.Path}";
+
+        if (statusCode == HttpStatusCode.InternalServerError)
+        {
+            _logger.LogError(exception, "Request {RequestName} failed", requestName);
+        }
+        else
+        {
+            _logger.LogWarning("Request {RequestName} failed with status {Status}. Message: {Message}", 
+                requestName, (int)statusCode, message);
+        }
 
         var problemDetails = new ProblemDetails
         {
