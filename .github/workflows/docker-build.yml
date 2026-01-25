@@ -1,0 +1,50 @@
+﻿name: Build and Push Docker Image
+
+# 1. TRIGGER: Kiedy to ma ruszyć?
+on:
+  push:
+    branches: [ "main" ] # Tylko jak wpadnie kod na main
+  pull_request:
+    branches: [ "main" ] # Lub jak ktoś robi PR do maina
+
+# 2. Zmienne środowiskowe (żeby nie powtarzać nazwy obrazu)
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/exepensetracker-api
+
+jobs:
+  build-and-push:
+    # 3. RUNNER: Na jakim systemie budujemy?
+    runs-on: ubuntu-latest
+
+    steps:
+      # Krok A: Pobierz kod z repozytorium
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Krok B: Zaloguj się do Docker Huba
+      # (Używamy sekretów, nigdy nie wpisuj hasła w kodzie!)
+      - name: Login to Docker Hub
+        if: github.event_name != 'pull_request' # Nie loguj się przy PR (bezpieczeństwo)
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Krok C: Konfiguracja Docker Buildx (do cache'owania i zaawansowanych buildów)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Krok D: Budowanie i wypychanie
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name != 'pull_request' }} # Wypchnij tylko jak to nie jest PR
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          # OPTYMALIZACJA CACHE (Dla Seniora!)
+          # Używamy cache GitHuba, żeby build trwał 30s zamiast 3 min
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
