@@ -18,5 +18,12 @@ public class CreateExpenseCommandValidator : AbstractValidator<CreateExpenseComm
         
         RuleFor(x => x.Description)
             .MaximumLength(1000).WithMessage("Description is too long");
+        
+        When(x => x.IsRecurring, () =>
+        {
+            RuleFor(x => x.Frequency)
+                .NotNull().WithMessage("Frequency is required for recurring expenses")
+                .IsInEnum().WithMessage("Invalid frequency value");
+        });
     }
 }

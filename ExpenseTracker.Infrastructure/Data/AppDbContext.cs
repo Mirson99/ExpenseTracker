@@ -15,6 +15,7 @@ public class AppDbContext: DbContext, IAppDbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<RecurringExpense> RecurringExpenses => Set<RecurringExpense>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,5 +23,6 @@ public class AppDbContext: DbContext, IAppDbContext
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new ExpenseConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
+        modelBuilder.ApplyConfiguration(new RecurringExpenseConfiguration());
     }
 }

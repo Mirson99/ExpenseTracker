@@ -9,6 +9,7 @@ public interface IAppDbContext
     public DbSet<Category> Categories { get; }
     public DbSet<Expense> Expenses { get; }
     public DbSet<RefreshToken> RefreshTokens { get; }
+    public DbSet<RecurringExpense> RecurringExpenses { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

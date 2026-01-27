@@ -26,7 +26,7 @@ public class ExpenseController: ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> Create(CreateExpenseRequest request)
     { 
-        var command = new CreateExpenseCommand(request.Name, request.Amount, request.CategoryId, request.Date, request.Description, request.Currency);
+        var command = new CreateExpenseCommand(request.Name, request.Amount, request.CategoryId, request.Date, request.Description, request.Currency, request.IsRecurring, request.Frequency);
         var id = await _sender.Send(command);
         return Ok(id);
     }

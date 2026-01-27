@@ -1,4 +1,6 @@
-﻿namespace ExpenseTracker.API.Requests;
+﻿using ExpenseTracker.Domain.Enums;
+
+namespace ExpenseTracker.API.Requests;
 
 public class CreateExpenseRequest
 {
@@ -8,4 +10,6 @@ public class CreateExpenseRequest
     public DateTime Date { get; set; }
     public string? Description { get; set; }
     public string? Currency { get; set; }
+    public bool IsRecurring { get; set; } = false;
+    public Frequency? Frequency { get; set; } = null;
 }

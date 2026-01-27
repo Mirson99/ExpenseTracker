@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using ExpenseTracker.Application.Interfaces;
 using ExpenseTracker.Domain.Entities;
+using ExpenseTracker.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -41,6 +42,34 @@ public class CreateExpenseCommandHandler: IRequestHandler<CreateExpenseCommand, 
             UpdatedAt = DateTime.UtcNow
         };
         await _dbContext.Expenses.AddAsync(expense, cancellationToken);
+        
+        if (request.IsRecurring && request.Frequency.HasValue)
+        {
+            var recurringExpense = new RecurringExpense
+            {
+                Id = Guid.NewGuid(),
+                UserId = _currentUser.UserId,
+                Name = request.Name,
+                Amount = request.Amount,
+                Currency = request.Currency,
+                CategoryId = request.CategoryId,
+                Frequency = request.Frequency.Value,
+                IsActive = true,
+                NextExecutionDate = request.Date
+            };
+            
+            do 
+            {
+                recurringExpense.MoveToNextDate();
+            } 
+            while (recurringExpense.NextExecutionDate <= DateTime.UtcNow.Date);
+            
+            await _dbContext.RecurringExpenses.AddAsync(recurringExpense);
+            
+            _logger.LogInformation("Created recurring expense pattern for {ExpenseName} for User {UserId}. Next run: {NextRun}", 
+                request.Name, _currentUser.UserId, recurringExpense.NextExecutionDate);
+        }
+        
         await _dbContext.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("User {UserId} created expense {ExpenseId}", _currentUser.UserId, expense.Id);
         return expense.Id;
