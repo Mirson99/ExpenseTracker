@@ -2,9 +2,11 @@
 using ExpenseTracker.Application.Auth.Commands.Register;
 using ExpenseTracker.Application.Expenses.Commands;
 using ExpenseTracker.Application.Expenses.Commands.DeleteExpense;
+using ExpenseTracker.Application.Expenses.Commands.DeleteRecurringExpense;
 using ExpenseTracker.Application.Expenses.Commands.UpdateExpense;
 using ExpenseTracker.Application.Expenses.Queries;
 using ExpenseTracker.Application.Expenses.Queries.GetExpenseById;
+using ExpenseTracker.Application.Expenses.Queries.GetUserRecurringExpenses;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -65,5 +67,23 @@ public class ExpenseController: ControllerBase
         var command = new UpdateExpenseCommand(id, request.Name, request.Amount, request.CategoryId, request.Date, request.Description, request.Currency);
         await _sender.Send(command);
         return NoContent();
+    }
+    
+    [Authorize]
+    [HttpDelete("recurring/{id}")]
+    public async Task<IActionResult> DeleteRecurringExpenseById(Guid id)
+    { 
+        var command = new DeleteRecurringExpenseCommand(id);
+        await _sender.Send(command);
+        return NoContent();
+    }
+    
+    [Authorize]
+    [HttpGet("recurring")]
+    public async Task<IActionResult> GetUserRecurringExpenses(string? searchTerm, string? sortColumn, string? sortOrder, int? categoryId, int page = 1, int pageSize = 10)
+    { 
+        var query = new GetUserRecurringExpensesQuery(searchTerm, sortColumn, sortOrder, categoryId, page, pageSize);
+        var list = await _sender.Send(query);
+        return Ok(list);
     }
 }

@@ -17,6 +17,16 @@ public class RecurringExpenseConfiguration: IEntityTypeConfiguration<RecurringEx
         builder.HasOne(x => x.Category)     
             .WithMany()                      
             .HasForeignKey(x => x.CategoryId)
-            .OnDelete(DeleteBehavior.Restrict); 
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.OwnsOne(e => e.Price, money =>
+        {
+            money.Property(m => m.Amount)
+                .HasColumnName("Amount");
+
+            money.Property(m => m.Currency)
+                .HasColumnName("Currency")
+                .HasMaxLength(3);
+        });
     }
 }

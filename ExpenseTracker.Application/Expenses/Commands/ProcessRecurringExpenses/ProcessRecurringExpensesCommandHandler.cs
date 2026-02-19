@@ -1,6 +1,7 @@
 ﻿using ExpenseTracker.Application.Interfaces;
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Enums;
+using ExpenseTracker.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -29,19 +30,8 @@ public class ProcessRecurringExpensesCommandHandler : IRequestHandler<ProcessRec
 
         foreach (var recurring in expensesToProcess)
         {
-            var newExpense = new Expense
-            {
-                Id = Guid.NewGuid(),
-                UserId = recurring.UserId,
-                Name = recurring.Name,
-                Amount = recurring.Amount,
-                Currency = recurring.Currency,
-                Date = today,
-                CreatedAt = today,
-                UpdatedAt = today,
-                CategoryId = recurring.CategoryId
-            };
-            _context.Expenses.Add(newExpense);
+            var expense = Expense.Create(recurring.Name, recurring.Price.Currency, recurring.Price.Amount, today, recurring.CategoryId, true, recurring.UserId, recurring.Description );
+            await _context.Expenses.AddAsync(expense, cancellationToken);
 
             recurring.MoveToNextDate();
         }

@@ -45,11 +45,12 @@ public class GetUserExpensesQueryHandler: IRequestHandler<GetUserExpensesQuery, 
                 Id = p.Id,
                 Name = p.Name,
                 Description = p.Description,
-                Currency = p.Currency,
-                Amount = p.Amount,
+                Currency = p.Price.Currency,
+                Amount = p.Price.Amount,
                 Date = p.Date,
                 CategoryName = p.Category.Name,
-                CategoryId = p.CategoryId
+                CategoryId = p.CategoryId,
+                IsRecurring = p.IsRecurring,
             });
 
         var expenses = await PagedList<ExpenseResponse>.CreateAsync(
@@ -64,8 +65,8 @@ public class GetUserExpensesQueryHandler: IRequestHandler<GetUserExpensesQuery, 
         request.SortColumn?.ToLower() switch
         {
             "name" => expense => expense.Name,
-            "amount" => expense => expense.Amount,
-            "currency" => expense => expense.Currency,
+            "amount" => expense => expense.Price.Amount,
+            "currency" => expense => expense.Price.Currency,
             "date" => expense => expense.Date,
             _ => expense => expense.Date
         };

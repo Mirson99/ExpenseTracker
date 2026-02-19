@@ -25,4 +25,8 @@
       <ProjectReference Include="..\ExpenseTracker.Infrastructure\ExpenseTracker.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Middleware\" />
+    </ItemGroup>
+
 </Project>

@@ -15,11 +15,12 @@ RUN dotnet restore "ExpenseTracker.API/ExpenseTracker.API.csproj"
 COPY . .
 # Budowanie (Publish)
 WORKDIR "ExpenseTracker.API"
-RUN dotnet publish "ExpenseTracker.API.csproj" -c Release -o /app/publish
+RUN dotnet publish "ExpenseTracker.API.csproj" -c Release -o /app/publish --no-restore
 
 # ETAP 2: Uruchamianie (Runtime w wersji 10)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 EXPOSE 8080
 COPY --from=build /app/publish .
+USER app
 ENTRYPOINT ["dotnet", "ExpenseTracker.API.dll"]

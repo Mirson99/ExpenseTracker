@@ -18,5 +18,14 @@ public class ExpenseConfiguration: IEntityTypeConfiguration<Expense>
             .WithMany()
             .HasForeignKey(e => e.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.OwnsOne(e => e.Price, money =>
+        {
+            money.Property(m => m.Amount)
+                .HasColumnName("Amount");
+
+            money.Property(m => m.Currency)
+                .HasColumnName("Currency")
+                .HasMaxLength(3);
+        });
     }
 }

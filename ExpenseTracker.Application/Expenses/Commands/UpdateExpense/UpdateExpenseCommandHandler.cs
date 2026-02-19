@@ -1,5 +1,6 @@
 ﻿using ExpenseTracker.Application.Common.Exceptions;
 using ExpenseTracker.Application.Interfaces;
+using ExpenseTracker.Domain.ValueObjects;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,13 +28,11 @@ public class UpdateExpenseCommandHandler : IRequestHandler<UpdateExpenseCommand>
         if (expense.UserId != _currentUser.UserId)
             throw new ForbiddenAccessException("User does not have permission to update expense");
 
-        expense.Name = command.Name;
-        expense.Description = command.Description;
-        expense.Amount = command.Amount;
-        expense.Date = DateTime.SpecifyKind(command.Date, DateTimeKind.Utc);
-        expense.CategoryId = command.CategoryId;
-        expense.Currency = command.Currency ?? expense.Currency;
-        expense.UpdatedAt = DateTime.UtcNow;
+        var currencyToUse = command.Currency ?? expense.Price.Currency;
+        var newPrice = Money.From(command.Amount, currencyToUse);
+        
+        expense.Update(command.Name, newPrice, command.Date, command.CategoryId, command.Description
+        );
 
         await _context.SaveChangesAsync(cancellationToken);
     }

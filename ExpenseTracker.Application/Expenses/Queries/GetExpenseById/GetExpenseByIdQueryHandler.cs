@@ -31,8 +31,8 @@ public class GetExpenseByIdQueryHandler: IRequestHandler<GetExpenseByIdQuery, Ex
         {
             Name = expense.Name,
             Description = expense.Description ?? "",
-            Currency = expense.Currency,
-            Amount = expense.Amount,
+            Currency = expense.Price.Currency,
+            Amount = expense.Price.Amount,
             Date = expense.Date,
             CategoryName = expense.Category.Name,
         };

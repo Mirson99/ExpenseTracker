@@ -2,6 +2,7 @@
 using ExpenseTracker.Application.Interfaces;
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Enums;
+using ExpenseTracker.Domain.ValueObjects;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -28,42 +29,12 @@ public class CreateExpenseCommandHandler: IRequestHandler<CreateExpenseCommand, 
             throw new ValidationException("Category does not exist");
         }
         
-        var expense = new Expense
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Description = request.Description,
-            Amount = request.Amount,
-            Date = request.Date,
-            CategoryId = request.CategoryId,
-            UserId = _currentUser.UserId,
-            Currency = request.Currency ?? "PLN",
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var expense = Expense.Create(request.Name, request.Currency, request.Amount, request.Date, request.CategoryId, request.IsRecurring, _currentUser.UserId, request.Description );
         await _dbContext.Expenses.AddAsync(expense, cancellationToken);
         
         if (request.IsRecurring && request.Frequency.HasValue)
         {
-            var recurringExpense = new RecurringExpense
-            {
-                Id = Guid.NewGuid(),
-                UserId = _currentUser.UserId,
-                Name = request.Name,
-                Amount = request.Amount,
-                Currency = request.Currency,
-                CategoryId = request.CategoryId,
-                Frequency = request.Frequency.Value,
-                IsActive = true,
-                NextExecutionDate = request.Date
-            };
-            
-            do 
-            {
-                recurringExpense.MoveToNextDate();
-            } 
-            while (recurringExpense.NextExecutionDate <= DateTime.UtcNow.Date);
-            
+            var recurringExpense = RecurringExpense.Create(request.Name, request.Currency, request.Amount, request.Date, request.CategoryId, _currentUser.UserId, request.Description, request.Frequency);
             await _dbContext.RecurringExpenses.AddAsync(recurringExpense);
             
             _logger.LogInformation("Created recurring expense pattern for {ExpenseName} for User {UserId}. Next run: {NextRun}", 
