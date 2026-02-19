@@ -1,8 +1,9 @@
 using System.Text.Json.Serialization;
 using ExpenseTracker.API.BackgroundJobs;
-using ExpenseTracker.API.Middleware;
+using ExpenseTracker.API.ExceptionHandlers;
 using ExpenseTracker.Application;
 using ExpenseTracker.Infrastructure;
+using ExpenseTracker.Infrastructure.Hubs;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Serilog;
@@ -17,6 +18,10 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .WriteTo.Console()
     .CreateLogger();
+
+builder.Services.AddProblemDetails(); 
+builder.Services.AddExceptionHandler<ValidationExceptionHandler>(); 
+builder.Services.AddExceptionHandler<DefaultExceptionHandler>();
 
 builder.Host.UseSerilog();
 
@@ -37,7 +42,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -53,10 +59,11 @@ builder.Services.AddHangfireServer();
 
 
 var app = builder.Build();
-app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+app.UseExceptionHandler();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("AllowFrontend");
+app.MapHub<NotificationsHub>("/hubs/notifications");
 
 if (app.Environment.IsDevelopment())
 {
@@ -73,7 +80,7 @@ using (var scope = app.Services.CreateScope())
         job => job.Execute(),
         Cron.Daily(1, 0)
     );
-}
+} 
 
 app.UseHttpsRedirection();
 
