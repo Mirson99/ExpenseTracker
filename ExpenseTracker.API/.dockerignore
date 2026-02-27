@@ -1,0 +1,19 @@
+﻿# Skompilowane pliki (kluczowe, by nie nadpisywać kontenera!)
+**/bin/
+**/obj/
+
+# Pliki konfiguracyjne IDE
+**/.idea/
+**/.vs/
+**/*.user
+**/*.suo
+
+# Testy i pokrycie kodu (niepotrzebne na produkcji)
+**/TestResults/
+
+# Logi
+**/*.log
+
+# Pliki systemowe
+**/.DS_Store
+Thumbs.db

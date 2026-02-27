@@ -3,9 +3,11 @@ using ExpenseTracker.API.BackgroundJobs;
 using ExpenseTracker.API.ExceptionHandlers;
 using ExpenseTracker.Application;
 using ExpenseTracker.Infrastructure;
+using ExpenseTracker.Infrastructure.Data;
 using ExpenseTracker.Infrastructure.Hubs;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -44,6 +46,10 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
+        policy.WithOrigins("http://localhost:5001")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -59,6 +65,11 @@ builder.Services.AddHangfireServer();
 
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
 app.UseExceptionHandler();
 app.UseSwagger();
 app.UseSwaggerUI();
