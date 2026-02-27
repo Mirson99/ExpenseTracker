@@ -9,7 +9,7 @@ on:
 
 # 2. Zmienne środowiskowe (żeby nie powtarzać nazwy obrazu)
 env:
-  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/exepensetracker-api
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/expensetracker-api
 
 jobs:
   build-and-push:
