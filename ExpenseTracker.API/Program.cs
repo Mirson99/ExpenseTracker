@@ -51,6 +51,12 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowCredentials();
     });
+    options.AddPolicy("AllowCloudFront", policy =>
+    {
+        policy.WithOrigins("https://d2optl8strayj6.cloudfront.net", "http://d2optl8strayj6.cloudfront.net")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
 });
 
 builder.Services.AddHangfire(configuration => configuration
@@ -74,6 +80,7 @@ app.UseExceptionHandler();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("AllowFrontend");
+app.UseCors("AllowCloudFront");
 app.MapHub<NotificationsHub>("/hubs/notifications");
 
 if (app.Environment.IsDevelopment())
