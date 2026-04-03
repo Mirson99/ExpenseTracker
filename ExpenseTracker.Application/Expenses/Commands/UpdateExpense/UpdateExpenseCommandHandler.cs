@@ -31,7 +31,7 @@ public class UpdateExpenseCommandHandler : IRequestHandler<UpdateExpenseCommand>
         var currencyToUse = command.Currency ?? expense.Price.Currency;
         var newPrice = Money.From(command.Amount, currencyToUse);
         
-        expense.Update(command.Name, newPrice, command.Date, command.CategoryId, command.Description
+        expense.Update(command.Name, newPrice, command.Date, command.CategoryId, command.Description, command.Status
         );
 
         await _context.SaveChangesAsync(cancellationToken);

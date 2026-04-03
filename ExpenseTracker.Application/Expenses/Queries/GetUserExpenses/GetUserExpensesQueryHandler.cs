@@ -30,6 +30,11 @@ public class GetUserExpensesQueryHandler: IRequestHandler<GetUserExpensesQuery, 
             expenseQuery = expenseQuery.Where(e => e.CategoryId == request.CategoryId);
         }
 
+        if (request.Status.HasValue)
+        {
+            expenseQuery = expenseQuery.Where(e => e.Status == request.Status.Value);
+        }
+
         if (request.SortOrder?.ToLower() == "asc")
         {
             expenseQuery = expenseQuery.OrderBy(GetSortProperty(request)).ThenBy(e => e.CreatedAt);
@@ -51,6 +56,7 @@ public class GetUserExpensesQueryHandler: IRequestHandler<GetUserExpensesQuery, 
                 CategoryName = p.Category.Name,
                 CategoryId = p.CategoryId,
                 IsRecurring = p.IsRecurring,
+                Status = p.Status,
             });
 
         var expenses = await PagedList<ExpenseResponse>.CreateAsync(

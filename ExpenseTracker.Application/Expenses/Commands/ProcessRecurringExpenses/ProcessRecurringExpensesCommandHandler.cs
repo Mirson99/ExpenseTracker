@@ -30,7 +30,7 @@ public class ProcessRecurringExpensesCommandHandler : IRequestHandler<ProcessRec
 
         foreach (var recurring in expensesToProcess)
         {
-            var expense = Expense.Create(recurring.Name, recurring.Price.Currency, recurring.Price.Amount, today, recurring.CategoryId, true, recurring.UserId, recurring.Description );
+            var expense = Expense.CreateManual(recurring.Name, recurring.Price.Currency, recurring.Price.Amount, today, recurring.CategoryId, true, recurring.UserId, recurring.Description );
             await _context.Expenses.AddAsync(expense, cancellationToken);
 
             recurring.MoveToNextDate();

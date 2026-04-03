@@ -10,11 +10,13 @@ public class GetExpenseByIdQueryHandler: IRequestHandler<GetExpenseByIdQuery, Ex
 {
     private readonly IAppDbContext  _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IFileStorageService _fileStorageService;
 
-    public GetExpenseByIdQueryHandler(IAppDbContext context, ICurrentUserService currentUserService)
+    public GetExpenseByIdQueryHandler(IAppDbContext context, ICurrentUserService currentUserService,  IFileStorageService fileStorageService)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _fileStorageService = fileStorageService;
     }
     
     public async Task<ExpenseResponse> Handle(GetExpenseByIdQuery request, CancellationToken cancellationToken)
@@ -26,6 +28,13 @@ public class GetExpenseByIdQueryHandler: IRequestHandler<GetExpenseByIdQuery, Ex
         if (expense.UserId != _currentUserService.UserId)
             throw new ForbiddenAccessException("User does not have permission to update expense");
 
+        string? receiptUrl = null;
+        if (!string.IsNullOrEmpty(expense.StorageKey))
+        {
+            receiptUrl = await _fileStorageService.DownloadFileAsync(
+                expense.StorageKey,
+                TimeSpan.FromMinutes(15));
+        }
 
         return new ExpenseResponse()
         {
@@ -35,6 +44,8 @@ public class GetExpenseByIdQueryHandler: IRequestHandler<GetExpenseByIdQuery, Ex
             Amount = expense.Price.Amount,
             Date = expense.Date,
             CategoryName = expense.Category.Name,
+            ReceiptUrl = receiptUrl,
+            Status = expense.Status,
         };
     }
 }

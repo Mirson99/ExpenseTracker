@@ -2,9 +2,10 @@
 
 public record Money
 {
-    public decimal Amount { get; init; }
-    public string Currency { get; init; }
+    public decimal? Amount { get; init; }
+    public string? Currency { get; init; }
     
+    private Money() { }
     private Money(decimal amount, string currency)
     {
         Amount = amount;
@@ -20,10 +21,10 @@ public record Money
         return new Money(amount, currency.ToUpper());
     }
     
-    public static Money operator +(Money left, Money right)
-    {
-        if (left.Currency != right.Currency)
-            throw new InvalidOperationException("Currency must be equal");
-        return new Money(left.Amount + right.Amount, left.Currency);
-    }
+    // public static Money operator +(Money left, Money right)
+    // {
+    //     if (left.Currency != right.Currency)
+    //         throw new InvalidOperationException("Currency must be equal");
+    //     return new Money(left.Amount + right.Amount, left.Currency);
+    // }
 }

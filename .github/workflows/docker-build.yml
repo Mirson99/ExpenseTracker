@@ -73,4 +73,5 @@ jobs:
             docker run -d -p 8080:8080 --name backend-app \
               --network expense-network \
               -e ConnectionStrings__DefaultConnection="${{ secrets.DB_CONNECTION }}" \
+              -e Gemini__ApiKey="${{ secrets.GEMINI_API_KEY }}" \
               ${{ env.IMAGE_NAME }}:latest

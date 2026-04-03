@@ -1,6 +1,7 @@
 ﻿using ExpenseTracker.Application.Interfaces;
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Infrastructure.Data;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
@@ -13,7 +14,8 @@ public static class TestDbContextFactory
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
-        var context = new AppDbContext(options);
+        var mockPublisher = new Mock<IPublisher>();
+        var context = new AppDbContext(options, mockPublisher.Object);
         
         // Seed categories
         context.Categories.AddRange(

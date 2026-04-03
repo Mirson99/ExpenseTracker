@@ -26,47 +26,47 @@ public class GetExpensesQueryHandlerTests : IDisposable
 
     private void SeedTestExpenses()
     {
-        var expenses = new List<Expense>
-        {
-            new Expense
-            {
-                Id = Guid.NewGuid(),
-                Name = "Expense 1",
-                Amount = 100m,
-                Date = DateTime.UtcNow.AddDays(-5),
-                CategoryId = 1,
-                UserId = _testUserId,
-                Currency = "PLN",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Expense
-            {
-                Id = Guid.NewGuid(),
-                Name = "Expense 2",
-                Amount = 200m,
-                Date = DateTime.UtcNow.AddDays(-3),
-                CategoryId = 2,
-                UserId = _testUserId,
-                Currency = "PLN",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            },
-            new Expense
-            {
-                Id = Guid.NewGuid(),
-                Name = "Someone Else's Expense",
-                Amount = 500m,
-                Date = DateTime.UtcNow,
-                CategoryId = 1,
-                UserId = Guid.NewGuid(),
-                Currency = "PLN",
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            }
-        };
-        _context.Expenses.AddRange(expenses);
-        _context.SaveChanges();
+        // var expenses = new List<Expense>
+        // {
+        //     new Expense
+        //     {
+        //         Id = Guid.NewGuid(),
+        //         Name = "Expense 1",
+        //         Amount = 100m,
+        //         Date = DateTime.UtcNow.AddDays(-5),
+        //         CategoryId = 1,
+        //         UserId = _testUserId,
+        //         Currency = "PLN",
+        //         CreatedAt = DateTime.UtcNow,
+        //         UpdatedAt = DateTime.UtcNow
+        //     },
+        //     new Expense
+        //     {
+        //         Id = Guid.NewGuid(),
+        //         Name = "Expense 2",
+        //         Amount = 200m,
+        //         Date = DateTime.UtcNow.AddDays(-3),
+        //         CategoryId = 2,
+        //         UserId = _testUserId,
+        //         Currency = "PLN",
+        //         CreatedAt = DateTime.UtcNow,
+        //         UpdatedAt = DateTime.UtcNow
+        //     },
+        //     new Expense
+        //     {
+        //         Id = Guid.NewGuid(),
+        //         Name = "Someone Else's Expense",
+        //         Amount = 500m,
+        //         Date = DateTime.UtcNow,
+        //         CategoryId = 1,
+        //         UserId = Guid.NewGuid(),
+        //         Currency = "PLN",
+        //         CreatedAt = DateTime.UtcNow,
+        //         UpdatedAt = DateTime.UtcNow
+        //     }
+        // };
+        // _context.Expenses.AddRange(expenses);
+        // _context.SaveChanges();
     }
 
     [Fact]

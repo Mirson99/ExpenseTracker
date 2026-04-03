@@ -29,7 +29,7 @@ public class CreateExpenseCommandHandler: IRequestHandler<CreateExpenseCommand, 
             throw new ValidationException("Category does not exist");
         }
         
-        var expense = Expense.Create(request.Name, request.Currency, request.Amount, request.Date, request.CategoryId, request.IsRecurring, _currentUser.UserId, request.Description );
+        var expense = Expense.CreateManual(request.Name, request.Currency, request.Amount, request.Date, request.CategoryId, request.IsRecurring, _currentUser.UserId, request.Description );
         await _dbContext.Expenses.AddAsync(expense, cancellationToken);
         
         if (request.IsRecurring && request.Frequency.HasValue)

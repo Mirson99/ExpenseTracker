@@ -7,6 +7,7 @@ using ExpenseTracker.Application.Expenses.Commands.UpdateExpense;
 using ExpenseTracker.Application.Expenses.Queries;
 using ExpenseTracker.Application.Expenses.Queries.GetExpenseById;
 using ExpenseTracker.Application.Expenses.Queries.GetUserRecurringExpenses;
+using ExpenseTracker.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,9 +36,9 @@ public class ExpenseController: ControllerBase
     
     [Authorize]
     [HttpGet("")]
-    public async Task<IActionResult> GetAllUserExpenses(string? searchTerm, string? sortColumn, string? sortOrder, int? categoryId, int page = 1, int pageSize = 10)
+    public async Task<IActionResult> GetAllUserExpenses(string? searchTerm, string? sortColumn, string? sortOrder, int? categoryId, ExpenseStatus? status, int page = 1, int pageSize = 10)
     { 
-        var query = new GetUserExpensesQuery(searchTerm, sortColumn, sortOrder, categoryId, page, pageSize);
+        var query = new GetUserExpensesQuery(searchTerm, sortColumn, sortOrder, categoryId, page, pageSize, status);
         var list = await _sender.Send(query);
         return Ok(list);
     }
@@ -64,7 +65,7 @@ public class ExpenseController: ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateExpenseCommand request)
     {
-        var command = new UpdateExpenseCommand(id, request.Name, request.Amount, request.CategoryId, request.Date, request.Description, request.Currency);
+        var command = new UpdateExpenseCommand(id, request.Name, request.Amount, request.CategoryId, request.Date, request.Description, request.Currency, request.Status);
         await _sender.Send(command);
         return NoContent();
     }

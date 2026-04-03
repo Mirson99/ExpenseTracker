@@ -9,10 +9,22 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      minio:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development        
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=db;Username=admin;Password=admin;      
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=db;Username=admin;Password=admin;
       - Serilog__WriteTo__0__Name=Console
+      # Zmienne dla AWS SDK w .NET
+      - AWS__AccessKey=admin
+      - AWS__SecretKey=password123
+      - AWS__Region=eu-central-1
+      - AWS__ServiceURL=http://minio:9000
+      - S3__BucketName=receipts-bucket
+      - MT_LICENSE=tutaj_wklej_swoj_wygenerowany_klucz_ze_strony
+
   frontend:
     build:
       context: ../expense-tracker-frontend
@@ -21,7 +33,8 @@ services:
         API_URL: http://localhost:5000
     container_name: expense-tracker-frontend
     ports:
-      - "5001:80"   
+      - "5001:80"
+  
   postgres:
     image: postgres:16-alpine
     container_name: expense-tracker-postgres
@@ -53,5 +66,51 @@ services:
       - postgres
     restart: unless-stopped
 
+  minio:
+    image: minio/minio:latest
+    container_name: expense-tracker-minio
+    ports:
+      - "9000:9000" # Port API (S3)
+      - "9001:9001" # Port panelu webowego (Console)
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+      MINIO_SERVER_URL: http://localhost:9000
+      MINIO_BROWSER_REDIRECT_URL: http://localhost:9001
+      MINIO_API_CORS_ALLOW_ORIGIN: "*" # Kluczowe dla frontendu (React)    
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio-setup:
+    image: minio/mc:latest
+    container_name: expense-tracker-minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set myminio http://minio:9000 admin password123;
+      mc mb myminio/receipts-bucket --ignore-existing;
+      mc anonymous set download myminio/receipts-bucket;
+      exit 0;
+      "
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: expense-tracker-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672" # Panel zarządzania w przeglądarce
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
 volumes:
   postgres_data:
+  minio_data:

@@ -4,4 +4,4 @@ using MediatR;
 
 namespace ExpenseTracker.Application.Expenses.Queries;
 
-public sealed record GetUserExpensesQuery(string? SearchTerm, string? SortColumn, string? SortOrder, int? CategoryId, int Page, int PageSize): IRequest<PagedList<ExpenseResponse>>;
+public sealed record GetUserExpensesQuery(string? SearchTerm, string? SortColumn, string? SortOrder, int? CategoryId, int Page, int PageSize, ExpenseStatus? Status): IRequest<PagedList<ExpenseResponse>>;

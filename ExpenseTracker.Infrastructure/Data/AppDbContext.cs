@@ -2,6 +2,7 @@
 using ExpenseTracker.Domain.Entities;
 using ExpenseTracker.Domain.Primitives;
 using ExpenseTracker.Infrastructure.Data.Configurations;
+using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,11 +31,14 @@ public class AppDbContext: DbContext, IAppDbContext
         modelBuilder.ApplyConfiguration(new ExpenseConfiguration());
         modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
         modelBuilder.ApplyConfiguration(new RecurringExpenseConfiguration());
+
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
     }
     
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var result = await base.SaveChangesAsync(cancellationToken);
         var entitiesWithEvents = ChangeTracker.Entries<BaseEntity>()
             .Where(e => e.Entity.DomainEvents.Any())
             .Select(e => e.Entity)
@@ -50,7 +54,8 @@ public class AppDbContext: DbContext, IAppDbContext
         {
             await _publisher.Publish(domainEvent, cancellationToken);
         }
-
+        
+        var result = await base.SaveChangesAsync(cancellationToken);
         return result;
     }
 }
