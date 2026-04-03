@@ -10,6 +10,7 @@ using ExpenseTracker.Infrastructure.Messaging.Consumers;
 using ExpenseTracker.Infrastructure.Repositories;
 using ExpenseTracker.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +42,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddTransient<INotificationService, SignalRNotificationService>();
         services.AddAwsS3(configuration);
-        services.AddMassTransit(configuration);
+        services.AddMassTransit(configuration, environment);
         services.AddPollyAndGemini(configuration);
         return services;
     }
@@ -115,7 +116,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddMassTransit(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddMassTransit(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
         var rabbitMqOptions = configuration
             .GetSection(RabbitMqOptions.SectionName)
@@ -133,17 +134,30 @@ public static class DependencyInjection
             });
             
             x.AddConsumer<ReceiptUploadedEventConsumer>();
-
-            x.UsingRabbitMq((context, cfg) =>
+            if (environment.IsDevelopment())
             {
-                cfg.Host(rabbitMqOptions.Host, rabbitMqOptions.VirtualHost, h =>
+                x.UsingRabbitMq((context, cfg) =>
                 {
-                    h.Username(rabbitMqOptions.Username);
-                    h.Password(rabbitMqOptions.Password);
-                });
+                    cfg.Host(rabbitMqOptions.Host, rabbitMqOptions.VirtualHost, h =>
+                    {
+                        h.Username(rabbitMqOptions.Username);
+                        h.Password(rabbitMqOptions.Password);
+                    });
 
-                cfg.ConfigureEndpoints(context);
-            });
+                    cfg.ConfigureEndpoints(context);
+                });
+            }
+            else
+            {
+                x.UsingAmazonSqs((context, cfg) =>
+                {
+                    cfg.Host(configuration["AWS:Region"] ?? "eu-central-1", h =>
+                    {
+                    });
+
+                    cfg.ConfigureEndpoints(context);
+                });
+            }
         });
 
         return services;
