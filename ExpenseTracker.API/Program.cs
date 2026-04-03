@@ -42,20 +42,15 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(
+                "http://localhost:5173", 
+                "http://localhost:5001",
+                "https://d2optl8strayj6.cloudfront.net", 
+                "http://d2optl8strayj6.cloudfront.net"
+            )
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials();
-        policy.WithOrigins("http://localhost:5001")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
-    options.AddPolicy("AllowCloudFront", policy =>
-    {
-        policy.WithOrigins("https://d2optl8strayj6.cloudfront.net", "http://d2optl8strayj6.cloudfront.net")
-            .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowCredentials(); // Zostawiam to, skoro używałeś tego lokalnie.
     });
 });
 
@@ -80,7 +75,6 @@ app.UseExceptionHandler();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseCors("AllowFrontend");
-app.UseCors("AllowCloudFront");
 app.MapHub<NotificationsHub>("/hubs/notifications");
 
 if (app.Environment.IsDevelopment())
