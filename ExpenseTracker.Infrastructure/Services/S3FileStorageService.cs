@@ -50,7 +50,7 @@ public class S3FileStorageService : IFileStorageService
             BucketName = _bucketName,
             Key = objectKey,
             Expires = DateTime.UtcNow.Add(expiry),
-            Protocol = Protocol.HTTP,
+            Protocol = Protocol.HTTPS,
             // ContentType = contentType
             Verb = HttpVerb.PUT
         };
