@@ -51,7 +51,7 @@ public class S3FileStorageService : IFileStorageService
             Key = objectKey,
             Expires = DateTime.UtcNow.Add(expiry),
             Protocol = Protocol.HTTPS,
-            // ContentType = contentType
+            ContentType = "image/jpeg",
             Verb = HttpVerb.PUT
         };
 
