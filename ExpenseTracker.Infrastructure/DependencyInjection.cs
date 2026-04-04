@@ -125,7 +125,7 @@ public static class DependencyInjection
             // Bezpieczny fallback regionu, aby uniknąć błędów inicjalizacji
             var region = !string.IsNullOrWhiteSpace(options.AuthenticationRegion) 
                 ? options.AuthenticationRegion 
-                : "eu-central-1";
+                : "eu-north-1";
 
             s3Config.RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(region);
         
