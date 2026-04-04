@@ -98,6 +98,8 @@ public static class DependencyInjection
     private static IServiceCollection AddAwsS3(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+        services.Configure<ExpenseTracker.Application.Common.Options.StorageOptions>(
+            configuration.GetSection(ExpenseTracker.Application.Common.Options.StorageOptions.SectionName));
         services.AddScoped<IFileStorageService, S3FileStorageService>();
         
         services.AddSingleton<IAmazonS3>(sp =>

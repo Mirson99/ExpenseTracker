@@ -1,10 +1,12 @@
 ﻿using System.Text.Json;
 using Amazon.S3;
+using ExpenseTracker.Application.Common.Options;
 using ExpenseTracker.Application.Interfaces;
 using ExpenseTracker.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Registry;
 
@@ -13,9 +15,10 @@ namespace ExpenseTracker.Application.Receipts.Commands.AnalyzeReceipt;
 public class AnalyzeReceiptCommandHandler(
     IAmazonS3 s3Client,
     IChatClient chatClient,
-    ResiliencePipelineProvider<string> pipelineProvider, // <-- ZMIANA: Wstrzykujemy Providera
+    ResiliencePipelineProvider<string> pipelineProvider,
     IAppDbContext dbContext,
-    INotificationService notificationService ) : IRequestHandler<AnalyzeReceiptCommand, bool>
+    INotificationService notificationService,
+    IOptions<StorageOptions> storageOptions) : IRequestHandler<AnalyzeReceiptCommand, bool>
 {
     public async Task<bool> Handle(AnalyzeReceiptCommand request, CancellationToken cancellationToken)
     {
@@ -29,7 +32,7 @@ public class AnalyzeReceiptCommandHandler(
         try
         {
             // 1. Pobranie pliku z MinIO
-            using var getObjectResponse = await s3Client.GetObjectAsync("receipts-bucket", request.StorageKey, cancellationToken);
+            using var getObjectResponse = await s3Client.GetObjectAsync(storageOptions.Value.BucketName, request.StorageKey, cancellationToken);
             using var memoryStream = new MemoryStream();
             await getObjectResponse.ResponseStream.CopyToAsync(memoryStream, cancellationToken);
             var imageBytes = memoryStream.ToArray();
