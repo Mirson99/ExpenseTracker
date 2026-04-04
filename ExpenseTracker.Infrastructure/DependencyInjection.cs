@@ -173,10 +173,10 @@ public static class DependencyInjection
             {
                 x.UsingAmazonSqs((context, cfg) =>
                 {
-                    cfg.Host(configuration["AWS:Region"] ?? "eu-central-1", h =>
+                    cfg.Host(configuration["AWS:Region"] ?? "eu-north-1", h =>
                     {
                     });
-
+    
                     cfg.ConfigureEndpoints(context);
                 });
             }
