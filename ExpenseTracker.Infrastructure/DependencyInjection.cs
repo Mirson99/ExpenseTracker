@@ -97,21 +97,43 @@ public static class DependencyInjection
     
     private static IServiceCollection AddAwsS3(this IServiceCollection services, IConfiguration configuration)
     {
-        var options = configuration
-            .GetSection(AwsS3Options.SectionName)
-            .Get<AwsS3Options>() ?? throw new InvalidOperationException("AwsS3Configuration section is missing");
-
-        var credentials = new BasicAWSCredentials(options.Username, options.Password);
-        var s3Config = new AmazonS3Config
-        {
-            ServiceURL = options.ServiceUrl,
-            AuthenticationRegion = options.AuthenticationRegion,
-            ForcePathStyle = true
-        };
-
-        services.AddSingleton<IAmazonS3>(_ => new AmazonS3Client(credentials, s3Config));
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
         services.AddScoped<IFileStorageService, S3FileStorageService>();
+        
+        services.AddSingleton<IAmazonS3>(sp =>
+        {
+            var options = configuration
+                .GetSection(AwsS3Options.SectionName)
+                .Get<AwsS3Options>() ?? throw new InvalidOperationException("AwsS3Configuration section is missing");
+
+            // Wyciągamy informacje o środowisku bezpośrednio z kontenera DI
+            var env = sp.GetRequiredService<IWebHostEnvironment>();
+            var s3Config = new AmazonS3Config();
+
+            if (env.IsDevelopment())
+            {
+                s3Config.ServiceURL = options.ServiceUrl;
+                s3Config.AuthenticationRegion = options.AuthenticationRegion;
+                s3Config.ForcePathStyle = true; // Niezbędne tylko dla MinIO
+
+                var credentials = new BasicAWSCredentials(options.Username, options.Password);
+                return new AmazonS3Client(credentials, s3Config);
+            }
+        
+            // --- TRYB PRODUKCYJNY: AWS S3 + Rola IAM z EC2 ---
+        
+            // Bezpieczny fallback regionu, aby uniknąć błędów inicjalizacji
+            var region = !string.IsNullOrWhiteSpace(options.AuthenticationRegion) 
+                ? options.AuthenticationRegion 
+                : "eu-central-1";
+
+            s3Config.RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(region);
+        
+            // Kluczowe: Pusty konstruktor używający wyłącznie s3Config.
+            // To zmusza AWS SDK do pominięcia kluczy statycznych i pobrania 
+            // automatycznie odnawianych tokenów z profilu maszyny EC2.
+            return new AmazonS3Client(s3Config);
+        });
 
         return services;
     }
